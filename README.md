@@ -23,3 +23,24 @@
    - `yarn dev` - 启动开发环境
 
    - `yarn build` - 打包项目
+
+## 代码格式化工具 - prettier
+
+[VSCode 插件下载地址](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+
+开启教程：
+
+1. 在某个 `.ts` 文件编辑中右键鼠标
+
+2. 在弹出的选择框里点击 `使用...格式化文档`
+
+3. 在弹出的选择框里点击 `配置默认格式化程序`
+
+4. 在弹出的选择框里点击 `Prettier - Code Format`
+
+## Twind 插件
+
+[`Twind`](https://twind.dev/) 是一个基于 [`TailwindCSS V2`](https://v2.tailwindcss.com/docs) 的 `原子CSS in JS` 的类名库
+
+[VSCode 插件下载地址](https://marketplace.visualstudio.com/items?itemName=sastan.twind-intellisense)
+
