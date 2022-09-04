@@ -5,7 +5,7 @@ export function apiTypingTips(word: string) {
   return result<WordTipOrigin[]>({
     url: "/typing-service/version/test/typingTips",
     method: "post",
-    params: { code: word },
+    data: { code: word },
   });
 }
 
