@@ -4,7 +4,7 @@ import { WordTipOrigin } from "./App";
 export function apiTypingTips(word: string) {
   return result<WordTipOrigin[]>({
     url: "/typing-service/version/test/typingTips",
-    method: "get",
+    method: "post",
     params: { code: word },
   });
 }
