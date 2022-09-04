@@ -5,13 +5,13 @@ import {
   LoadingOverlay,
   Textarea,
   Title,
-  Tooltip,
-} from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
-import { useMount, useRequest, useSetState } from "ahooks";
-import { useRef } from "react";
-import { tw } from "twind";
-import { apiTypingTips } from "./api";
+  Tooltip
+} from '@mantine/core';
+import { useHotkeys } from '@mantine/hooks';
+import { useMount, useRequest, useSetState } from 'ahooks';
+import { useRef } from 'react';
+import { tw } from 'twind';
+import { apiTypingTips } from './api';
 
 export interface WordTipOrigin {
   next: number;
@@ -24,54 +24,50 @@ export interface WordTipOrigin {
 
 const typingContentStore = {
   write(content: string) {
-    localStorage.setItem("typingContent", content);
+    localStorage.setItem('typingContent', content);
   },
   read() {
-    return (localStorage.getItem("typingContent") ||
-      "忽如一夜春风来") as string;
-  },
+    return (localStorage.getItem('typingContent') || '忽如一夜春风来') as string;
+  }
 };
 
 function App(): JSX.Element {
   const {
     loading: typingTipLoading,
     data: typingTipSource,
-    run: requestTypingTip,
+    run: requestTypingTip
   } = useRequest(apiTypingTips, {
-    manual: true,
+    manual: true
   });
   const [{ currentInputContent }, setStates] = useSetState({
-    currentInputContent: "",
+    currentInputContent: ''
   });
   const typingInputElement = useRef<HTMLTextAreaElement>(null);
 
   useHotkeys([
     [
-      "ctrl+e",
+      'ctrl+e',
       () => {
         loadTypingContent();
-      },
-    ],
+      }
+    ]
   ]);
 
   useMount(function registerInputListener() {
     let lock = false;
-    typingInputElement.current!.addEventListener(
-      "compositionstart",
-      function () {
-        lock = true;
-      }
-    );
-    typingInputElement.current!.addEventListener("compositionend", (event) => {
+    typingInputElement.current!.addEventListener('compositionstart', function () {
+      lock = true;
+    });
+    typingInputElement.current!.addEventListener('compositionend', event => {
       lock = false;
       inputContentChange((event as any).target.value);
     });
-    typingInputElement.current!.addEventListener("input", (event) => {
+    typingInputElement.current!.addEventListener('input', event => {
       if (!lock) inputContentChange((event as any).target.value);
     });
 
-    typingInputElement.current!.addEventListener("keydown", (event) => {
-      if (event.key === "F3") {
+    typingInputElement.current!.addEventListener('keydown', event => {
+      if (event.key === 'F3') {
         clearInputContent();
         event.preventDefault();
       }
@@ -89,8 +85,8 @@ function App(): JSX.Element {
   });
 
   function clearInputContent() {
-    typingInputElement.current!.value = "";
-    setStates({ currentInputContent: "" });
+    typingInputElement.current!.value = '';
+    setStates({ currentInputContent: '' });
   }
 
   async function loadTypingContent(defaultContent?: string) {
@@ -109,18 +105,11 @@ function App(): JSX.Element {
     <div className={tw`h-screen w-screen flex flex-col`}>
       <LoadingOverlay visible={typingTipLoading} overlayBlur={2} />
 
-      <div
-        className={tw`h-[50px] w-full flex items-center justify-between px-[20px]`}
-      >
+      <div className={tw`h-[50px] w-full flex items-center justify-between px-[20px]`}>
         <Title order={2}>typing-tips</Title>
         <div>
           {renderCurrentTypingWordCode()}
-          <Tooltip
-            label={<span>Ctrl + e</span>}
-            color="gray"
-            position="bottom"
-            withArrow
-          >
+          <Tooltip label={<span>Ctrl + e</span>} color="gray" position="bottom" withArrow>
             <Button
               variant="filled"
               color="violet"
@@ -159,8 +148,7 @@ function App(): JSX.Element {
     )
       return null;
 
-    const currentWordSource =
-      typingTipSource.result[currentInputContent.length];
+    const currentWordSource = typingTipSource.result[currentInputContent.length];
 
     return (
       <Badge color="grape" className={tw`normal-case mr-[10px]`}>
@@ -181,7 +169,7 @@ function App(): JSX.Element {
       wordHead: tw`ml-[4px]`,
       /** 已打过的字 */
       historyChar: tw`bg-[#2b2b2a] `,
-      singeChar: tw`text-[block]`,
+      singeChar: tw`text-[block]`
     };
 
     let prevUsefulNextVal: number = -1;
@@ -228,9 +216,7 @@ function App(): JSX.Element {
           <div className={clsx(...classNames)}>
             {render.word}
             {isWordHead && (
-              <span
-                className={tw`absolute left-[2px] bottom-[-20px] text([12px] [red])`}
-              >
+              <span className={tw`absolute left-[2px] bottom-[-20px] text([12px] [red])`}>
                 {render.wordsCode}
               </span>
             )}
