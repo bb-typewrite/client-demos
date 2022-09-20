@@ -20,6 +20,7 @@ export interface WordTipOrigin {
   words: string | null;
   wordsCode: string | null;
   type: string | null;
+  [key: string]: any;
 }
 
 const typingContentStore = {
@@ -232,7 +233,9 @@ function App(): JSX.Element {
                 {key} -
                 {value !== null ? (
                   <Badge color="lime" className={tw`normal-case ml-[5px]`}>
-                    {value}
+                    {['string', 'number'].includes(typeof value)
+                      ? value
+                      : JSON.stringify(value)}
                   </Badge>
                 ) : (
                   <span className={tw`ml-[5px]`}>null</span>
