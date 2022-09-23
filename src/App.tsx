@@ -163,11 +163,13 @@ function App(): JSX.Element {
 
     const { result: wordTipSource } = typingTipSource;
     const currentInputIndex = currentInputContent.length;
+    const renderSource: React.ReactNode[] = [];
 
     const styles = {
       // 词的样式
       word: tw`text-[#7af500] border(b-[2px] solid)`,
-      wordHead: tw`ml-[4px]`,
+      wordWrapper: tw`ml-[4px] relative flex(& col)`,
+      wordCodeTip: tw`text([12px] [red])`,
       /** 已打过的字 */
       historyChar: tw`bg-[#2b2b2a] `,
       singeChar: tw`text-[block]`
@@ -175,77 +177,101 @@ function App(): JSX.Element {
 
     let prevUsefulNextVal: number = -1;
 
-    return wordTipSource.map((render, renderIndex) => {
-      let isWordHead = false;
+    let currentWordIndexes: number[] = [];
 
-      const classNames: string[] = (() => {
-        const names: string[] = [tw`mb-[15px] relative`];
+    wordTipSource.forEach((render, renderIndex) => {
+      const formatSpace = (text: string) => (text === ' ' ? '　' : text);
 
-        if (renderIndex < currentInputIndex) {
-          names.push(styles.historyChar);
-        } else {
-          if (
-            render.next > prevUsefulNextVal &&
-            render.next !== renderIndex &&
-            renderIndex !== prevUsefulNextVal
-          ) {
-            prevUsefulNextVal = render.next;
-            names.push(styles.word, styles.wordHead);
-            isWordHead = true;
-          } else if (render.next === renderIndex) {
-            if (render.next <= prevUsefulNextVal) {
-              names.push(styles.word);
-            } else {
-              names.push(styles.singeChar);
-            }
-          } else if (renderIndex <= prevUsefulNextVal) {
-            names.push(styles.word);
-          }
-        }
-
-        return names;
-      })();
-
-      return (
-        <Tooltip
-          label={renderLabel()}
-          color="teal"
-          position="bottom-start"
-          withArrow
-          key={renderIndex}
-        >
-          <div className={clsx(...classNames)}>
-            {render.word}
-            {isWordHead && (
-              <span className={tw`absolute left-[2px] bottom-[-20px] text([12px] [red])`}>
-                {render.wordsCode}
-              </span>
-            )}
-          </div>
-        </Tooltip>
-      );
-
-      function renderLabel(): React.ReactNode {
-        return (
-          <div className={tw`flex(& col)`}>
-            {Object.entries(render).map(([key, value]) => (
-              <div>
-                {key} -
-                {value !== null ? (
-                  <Badge color="lime" className={tw`normal-case ml-[5px]`}>
-                    {['string', 'number'].includes(typeof value)
-                      ? value
-                      : JSON.stringify(value)}
-                  </Badge>
-                ) : (
-                  <span className={tw`ml-[5px]`}>null</span>
-                )}
-              </div>
-            ))}
-          </div>
+      const isHistoryChar = renderIndex < currentInputIndex;
+      if (isHistoryChar) {
+        renderSource.push(
+          withTooltip(
+            <span key={renderIndex} className={clsx(styles.historyChar)}>
+              {formatSpace(render.word)}
+            </span>,
+            render
+          )
         );
+      } else {
+        const isWordHead =
+          render.next > prevUsefulNextVal &&
+          render.next !== renderIndex &&
+          renderIndex !== prevUsefulNextVal;
+
+        if (isWordHead) {
+          prevUsefulNextVal = render.next;
+          currentWordIndexes = [renderIndex];
+        } else if (render.next === renderIndex) {
+          const inWordRange = render.next < prevUsefulNextVal;
+          const isWordEnd = render.next === prevUsefulNextVal;
+
+          if (inWordRange) {
+            currentWordIndexes.push(renderIndex);
+          } else if (isWordEnd) {
+            currentWordIndexes.push(renderIndex);
+
+            renderSource.push(
+              <div className={clsx(styles.wordWrapper)}>
+                <div>
+                  {currentWordIndexes.map(wordIndex => {
+                    return withTooltip(
+                      <span key={wordIndex} className={clsx(styles.word)}>
+                        {formatSpace(wordTipSource[wordIndex].word)}
+                      </span>,
+                      wordTipSource[wordIndex]
+                    );
+                  })}
+                </div>
+                <span className={styles.wordCodeTip}>{render.wordsCode}</span>
+              </div>
+            );
+          } /* is-singe-char */ else {
+            renderSource.push(
+              withTooltip(
+                <span key={renderIndex} className={clsx(styles.singeChar)}>
+                  {formatSpace(render.word)}
+                </span>,
+                render
+              )
+            );
+          }
+        } else if (
+          /* 是一个新词，但它是处于大词范围内。例：`我好想你` 中的 `好想` */ renderIndex <=
+          prevUsefulNextVal
+        ) {
+          currentWordIndexes.push(renderIndex);
+        }
       }
     });
+
+    return renderSource;
+
+    function withTooltip(children: JSX.Element, source: WordTipOrigin) {
+      const label = (
+        <div className={tw`flex(& col)`}>
+          {Object.entries(source).map(([key, value]) => (
+            <div>
+              {key} -
+              {value !== null ? (
+                <Badge color="lime" className={tw`normal-case ml-[5px]`}>
+                  {['string', 'number'].includes(typeof value)
+                    ? value
+                    : JSON.stringify(value)}
+                </Badge>
+              ) : (
+                <span className={tw`ml-[5px]`}>null</span>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+
+      return (
+        <Tooltip label={label} color="gray" position="bottom" withArrow>
+          {children}
+        </Tooltip>
+      );
+    }
   }
 }
 
